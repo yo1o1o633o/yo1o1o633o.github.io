@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="基本信息 启动一个SpringBoot应用分为两步, 此文章只有第一步的流程  创建SpringApplication对象 调用SpringApplication的run方法启动应用  构造方法 SpringApplication类提供了两个构造方法, 前一个最终也是调用第二个构造方法, 只分析第二个构造方法内部执行分为以下几步:  获取和设置启动容器的类型 获取和设置初始化器和监听器 获取和设置">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SpringBoot-SpringApplication初始化">
+<meta property="og:url" content="http://example.com/2022/02/16/SpringBoot-SpringApplication%E5%88%9D%E5%A7%8B%E5%8C%96/index.html">
+<meta property="og:site_name" content="小花儿的技术博客">
+<meta property="og:description" content="基本信息 启动一个SpringBoot应用分为两步, 此文章只有第一步的流程  创建SpringApplication对象 调用SpringApplication的run方法启动应用  构造方法 SpringApplication类提供了两个构造方法, 前一个最终也是调用第二个构造方法, 只分析第二个构造方法内部执行分为以下几步:  获取和设置启动容器的类型 获取和设置初始化器和监听器 获取和设置">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-02-16T09:03:16.000Z">
+<meta property="article:modified_time" content="2022-12-08T01:48:40.104Z">
+<meta property="article:author" content="Yangs">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="源码">
+<meta property="article:tag" content="SpringBoot">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://example.com/2022/02/16/SpringBoot-SpringApplication%E5%88%9D%E5%A7%8B%E5%8C%96/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2022/02/16/SpringBoot-SpringApplication%E5%88%9D%E5%A7%8B%E5%8C%96/","path":"2022/02/16/SpringBoot-SpringApplication初始化/","title":"SpringBoot-SpringApplication初始化"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>SpringBoot-SpringApplication初始化 | 小花儿的技术博客</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">小花儿的技术博客</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E4%BF%A1%E6%81%AF"><span class="nav-number">1.</span> <span class="nav-text">基本信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E6%96%B9%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">构造方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E8%8E%B7%E5%8F%96%E5%AE%B9%E5%99%A8%E7%B1%BB%E5%9E%8B"><span class="nav-number">3.</span> <span class="nav-text">1. 获取容器类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E8%8E%B7%E5%8F%96%E5%88%9D%E5%A7%8B%E5%8C%96%E5%99%A8%E5%92%8C%E7%9B%91%E5%90%AC%E5%99%A8"><span class="nav-number">4.</span> <span class="nav-text">2. 获取初始化器和监听器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E8%8E%B7%E5%8F%96%E5%90%AF%E5%8A%A8%E7%B1%BB%E5%AF%B9%E8%B1%A1"><span class="nav-number">5.</span> <span class="nav-text">3. 获取启动类对象</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yangs"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yangs</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">24</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/02/16/SpringBoot-SpringApplication%E5%88%9D%E5%A7%8B%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yangs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小花儿的技术博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SpringBoot-SpringApplication初始化
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-02-16 17:03:16" itemprop="dateCreated datePublished" datetime="2022-02-16T17:03:16+08:00">2022-02-16</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2022-12-08 09:48:40" itemprop="dateModified" datetime="2022-12-08T09:48:40+08:00">2022-12-08</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/SpringBoot/" itemprop="url" rel="index"><span itemprop="name">SpringBoot</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <div class="note success"><h3 id="基本信息"><a href="#基本信息" class="headerlink" title="基本信息"></a>基本信息</h3></div>
+<p>启动一个SpringBoot应用分为两步, 此文章只有第一步的流程</p>
+<ol>
+<li>创建SpringApplication对象</li>
+<li>调用SpringApplication的run方法启动应用</li>
+</ol>
+<div class="note success"><h3 id="构造方法"><a href="#构造方法" class="headerlink" title="构造方法"></a>构造方法</h3></div>
+<p>SpringApplication类提供了两个构造方法, 前一个最终也是调用第二个构造方法, 只分析第二个<br>构造方法内部执行分为以下几步:</p>
+<ol>
+<li>获取和设置启动容器的类型</li>
+<li>获取和设置初始化器和监听器</li>
+<li>获取和设置启动类对象</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">SpringApplication</span><span class="params">(Class&lt;?&gt;... primarySources)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>(<span class="keyword">null</span>, primarySources);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">SpringApplication</span><span class="params">(ResourceLoader resourceLoader, Class&lt;?&gt;... primarySources)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.resourceLoader = resourceLoader;</span><br><span class="line">    Assert.notNull(primarySources, <span class="string">&quot;PrimarySources must not be null&quot;</span>);</span><br><span class="line">    <span class="keyword">this</span>.primarySources = <span class="keyword">new</span> LinkedHashSet&lt;&gt;(Arrays.asList(primarySources));</span><br><span class="line">    <span class="comment">// 1. 获取和设置启动容器的类型</span></span><br><span class="line">    <span class="keyword">this</span>.webApplicationType = WebApplicationType.deduceFromClasspath();</span><br><span class="line">    <span class="comment">// 2. 获取和设置初始化器和监听器</span></span><br><span class="line">    <span class="keyword">this</span>.bootstrapRegistryInitializers = <span class="keyword">new</span> ArrayList&lt;&gt;(getSpringFactoriesInstances(BootstrapRegistryInitializer.class));</span><br><span class="line">    setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));</span><br><span class="line">    setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));</span><br><span class="line">    <span class="comment">// 3. 获取和设置启动类对象</span></span><br><span class="line">    <span class="keyword">this</span>.mainApplicationClass = deduceMainApplicationClass();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<div class="note success"><h3 id="1-获取容器类型"><a href="#1-获取容器类型" class="headerlink" title="1. 获取容器类型"></a>1. 获取容器类型</h3></div>
+<p>Spring定义了要容器启动必要的类路径信息, 此方法根据类路径信息判断是否类是否存在和是否可以加载来确定以哪种容器类型启动应用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String[] SERVLET_INDICATOR_CLASSES = &#123; <span class="string">&quot;javax.servlet.Servlet&quot;</span>, <span class="string">&quot;org.springframework.web.context.ConfigurableWebApplicationContext&quot;</span> &#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String WEBMVC_INDICATOR_CLASS = <span class="string">&quot;org.springframework.web.servlet.DispatcherServlet&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String WEBFLUX_INDICATOR_CLASS = <span class="string">&quot;org.springframework.web.reactive.DispatcherHandler&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String JERSEY_INDICATOR_CLASS = <span class="string">&quot;org.glassfish.jersey.servlet.ServletContainer&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> WebApplicationType <span class="title">deduceFromClasspath</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 判断当前的web环境. 默认是SpringMVC, 返回结果是WebApplicationType.SERVLET</span></span><br><span class="line">    <span class="keyword">if</span> (ClassUtils.isPresent(WEBFLUX_INDICATOR_CLASS, <span class="keyword">null</span>) &amp;&amp; !ClassUtils.isPresent(WEBMVC_INDICATOR_CLASS, <span class="keyword">null</span>) &amp;&amp; !ClassUtils.isPresent(JERSEY_INDICATOR_CLASS, <span class="keyword">null</span>)) &#123;</span><br><span class="line">        <span class="keyword">return</span> WebApplicationType.REACTIVE;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 判断当前容器是否为servlet</span></span><br><span class="line">    <span class="comment">// &quot;javax.servlet.Servlet&quot;</span></span><br><span class="line">    <span class="comment">// &quot;org.springframework.web.context.ConfigurableWebApplicationContext&quot;</span></span><br><span class="line">    <span class="comment">// 当静态变量配置的两个类同时存在且可加载时, 才能按照servlet容器启动. 否则返回NONE</span></span><br><span class="line">    <span class="keyword">for</span> (String className : SERVLET_INDICATOR_CLASSES) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!ClassUtils.isPresent(className, <span class="keyword">null</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> WebApplicationType.NONE;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 当前容器为servlet</span></span><br><span class="line">    <span class="keyword">return</span> WebApplicationType.SERVLET;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<div class="note success"><h3 id="2-获取初始化器和监听器"><a href="#2-获取初始化器和监听器" class="headerlink" title="2. 获取初始化器和监听器"></a>2. 获取初始化器和监听器</h3></div>
+<p>SpringBoot的特性之一就是约定大于配置.在每个引入的依赖包中配置META-INF/spring.factories文件, 文件内配置好要自动装配的组件信息(类全限定名).SpringBoot在启动时会自动将这些组件注入到Spring容器中<br>在创建SpringBoot过程中会调用getSpringFactoriesInstances()方法, 获取Spring预设置好的一些初始化器和监听器<br>此方法会在Spring的以下3个依赖中读取META-INF/spring.factories文件,读取出约定好的要注入的组件信息<br>如org/springframework/boot/spring-boot-autoconfigure/2.6.3/spring-boot-autoconfigure-2.6.3.jar!/META-INF/spring.factories文件</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># Initializers</span><br><span class="line">org.springframework.context.ApplicationContextInitializer=\</span><br><span class="line">org.springframework.boot.autoconfigure.SharedMetadataReaderFactoryContextInitializer,\</span><br><span class="line">org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener</span><br><span class="line"></span><br><span class="line"># Application Listeners</span><br><span class="line">org.springframework.context.ApplicationListener=\</span><br><span class="line">org.springframework.boot.autoconfigure.BackgroundPreinitializer</span><br></pre></td></tr></table></figure>
+
+
+<p>回到构造函数的流程</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获取BootstrapRegistryInitializer.class对应的配置</span></span><br><span class="line"><span class="keyword">this</span>.bootstrapRegistryInitializers = <span class="keyword">new</span> ArrayList&lt;&gt;(getSpringFactoriesInstances(BootstrapRegistryInitializer.class));</span><br><span class="line"><span class="comment">// 获取ApplicationContextInitializer.class对应的配置</span></span><br><span class="line">setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));</span><br><span class="line"><span class="comment">// 获取ApplicationListener.class对应的配置</span></span><br><span class="line">setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));</span><br></pre></td></tr></table></figure>
+
+<p>此方法会根据入参的类, 找到类对应需要创建的对象, 要创建的对象对应的类信息是从spring.factories文件中读取出来的</p>
+<ol>
+<li>获取当前使用的类加载器, 此处为应用类加载器</li>
+<li>使用类加载器获取spring.factories文件信息</li>
+<li>利用反射spring.factories文件信息创建对象</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> &lt;T&gt; <span class="function">Collection&lt;T&gt; <span class="title">getSpringFactoriesInstances</span><span class="params">(Class&lt;T&gt; type)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> getSpringFactoriesInstances(type, <span class="keyword">new</span> Class&lt;?&gt;[] &#123;&#125;);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* Class&lt;T&gt; type                 要获取的类型</span></span><br><span class="line"><span class="comment">* Class&lt;?&gt;[] parameterTypes     参数类型, 用于调用构造器创建对象用</span></span><br><span class="line"><span class="comment">* Object... args                一些参数</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">private</span> &lt;T&gt; <span class="function">Collection&lt;T&gt; <span class="title">getSpringFactoriesInstances</span><span class="params">(Class&lt;T&gt; type, Class&lt;?&gt;[] parameterTypes, Object... args)</span> </span>&#123;</span><br><span class="line">    ClassLoader classLoader = getClassLoader();</span><br><span class="line">    Set&lt;String&gt; names = <span class="keyword">new</span> LinkedHashSet&lt;&gt;(SpringFactoriesLoader.loadFactoryNames(type, classLoader));</span><br><span class="line">    List&lt;T&gt; instances = createSpringFactoriesInstances(type, parameterTypes, classLoader, args, names);</span><br><span class="line">    AnnotationAwareOrderComparator.sort(instances);</span><br><span class="line">    <span class="keyword">return</span> instances;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>classLoader.getResources(FACTORIES_RESOURCE_LOCATION)此方法可以将应用类加载器可以加载的路径下META-INF/spring.factories文件都读取出来<br>SpringBoot启动时会读取以下配置</p>
+<ul>
+<li>org/springframework/boot/spring-boot-autoconfigure/2.6.3/spring-boot-autoconfigure-2.6.3.jar!/META-INF/spring.factories</li>
+<li>org/springframework/boot/spring-boot/2.6.3/spring-boot-2.6.3.jar!/META-INF/spring.factories</li>
+<li>org/springframework/spring-beans/5.3.15/spring-beans-5.3.15.jar!/META-INF/spring.factories</li>
+<li>如果自己的应用也定义了META-INF/spring.factories文件, 那么也会被扫描到并处理</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String FACTORIES_RESOURCE_LOCATION = <span class="string">&quot;META-INF/spring.factories&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> List&lt;String&gt; <span class="title">loadFactoryNames</span><span class="params">(Class&lt;?&gt; factoryType, <span class="meta">@Nullable</span> ClassLoader classLoader)</span> </span>&#123;</span><br><span class="line">    ClassLoader classLoaderToUse = classLoader;</span><br><span class="line">    <span class="keyword">if</span> (classLoaderToUse == <span class="keyword">null</span>) &#123;</span><br><span class="line">        classLoaderToUse = SpringFactoriesLoader.class.getClassLoader();</span><br><span class="line">    &#125;</span><br><span class="line">    String factoryTypeName = factoryType.getName();</span><br><span class="line">    <span class="keyword">return</span> loadSpringFactories(classLoaderToUse).getOrDefault(factoryTypeName, Collections.emptyList());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 根据传入的类加载器获取数据</span></span><br><span class="line"><span class="comment">* 根据类加载器的类型获取META-INF/spring.factories资源, 读取里面的配置信息</span></span><br><span class="line"><span class="comment">* 将配置信息整理并去重, 保存为Map形式</span></span><br><span class="line"><span class="comment">* ClassLoader classLoader   类加载器</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> Map&lt;String, List&lt;String&gt;&gt; loadSpringFactories(ClassLoader classLoader) &#123;</span><br><span class="line">    Map&lt;String, List&lt;String&gt;&gt; result = cache.get(classLoader);</span><br><span class="line">    <span class="keyword">if</span> (result != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// spring.factories文件的格式分为两级目录, 一级配置做为Key, 二级配置整理为数据做为Value</span></span><br><span class="line">    result = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// 这里会将所有应用类加载器可以加载的路径下META-INF/spring.factories文件都读取出来</span></span><br><span class="line">        Enumeration&lt;URL&gt; urls = classLoader.getResources(FACTORIES_RESOURCE_LOCATION);</span><br><span class="line">        <span class="comment">// 遍历这些文件</span></span><br><span class="line">        <span class="keyword">while</span> (urls.hasMoreElements()) &#123;</span><br><span class="line">            URL url = urls.nextElement();</span><br><span class="line">            UrlResource resource = <span class="keyword">new</span> UrlResource(url);</span><br><span class="line">            <span class="comment">// 解析文件到Properties对象</span></span><br><span class="line">            Properties properties = PropertiesLoaderUtils.loadProperties(resource);</span><br><span class="line">            <span class="keyword">for</span> (Map.Entry&lt;?, ?&gt; entry : properties.entrySet()) &#123;</span><br><span class="line">                String factoryTypeName = ((String) entry.getKey()).trim();</span><br><span class="line">                <span class="comment">// 将配置文件的子信息整理为数据</span></span><br><span class="line">                String[] factoryImplementationNames = StringUtils.commaDelimitedListToStringArray((String) entry.getValue());</span><br><span class="line">                <span class="keyword">for</span> (String factoryImplementationName : factoryImplementationNames) &#123;</span><br><span class="line">                    result.computeIfAbsent(factoryTypeName, key -&gt; <span class="keyword">new</span> ArrayList&lt;&gt;()).add(factoryImplementationName.trim());</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 移除重复类全限定名</span></span><br><span class="line">        result.replaceAll((factoryType, implementations) -&gt; implementations.stream().distinct().collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList)));</span><br><span class="line">        <span class="comment">// 保存到本地缓存</span></span><br><span class="line">        cache.put(classLoader, result);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span> (IOException ex) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">&quot;Unable to load factories from location [&quot;</span> + FACTORIES_RESOURCE_LOCATION + <span class="string">&quot;]&quot;</span>, ex);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 此方法对传入的类全限定名信息, 利用反射获取对应的构造器创建对象</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">private</span> &lt;T&gt; <span class="function">List&lt;T&gt; <span class="title">createSpringFactoriesInstances</span><span class="params">(Class&lt;T&gt; type, Class&lt;?&gt;[] parameterTypes, ClassLoader classLoader, Object[] args, Set&lt;String&gt; names)</span> </span>&#123;</span><br><span class="line">    List&lt;T&gt; instances = <span class="keyword">new</span> ArrayList&lt;&gt;(names.size());</span><br><span class="line">    <span class="keyword">for</span> (String name : names) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 获取类对象</span></span><br><span class="line">            Class&lt;?&gt; instanceClass = ClassUtils.forName(name, classLoader);</span><br><span class="line">            Assert.isAssignable(type, instanceClass);</span><br><span class="line">            <span class="comment">// 获取构造器</span></span><br><span class="line">            Constructor&lt;?&gt; constructor = instanceClass.getDeclaredConstructor(parameterTypes);</span><br><span class="line">            <span class="comment">// 利用构造器创建对象</span></span><br><span class="line">            T instance = (T) BeanUtils.instantiateClass(constructor, args);</span><br><span class="line">            instances.add(instance);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">&quot;Cannot instantiate &quot;</span> + type + <span class="string">&quot; : &quot;</span> + name, ex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 返回这些对象</span></span><br><span class="line">    <span class="keyword">return</span> instances;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<div class="note success"><h3 id="3-获取启动类对象"><a href="#3-获取启动类对象" class="headerlink" title="3. 获取启动类对象"></a>3. 获取启动类对象</h3></div>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> Class&lt;?&gt; deduceMainApplicationClass() &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        StackTraceElement[] stackTrace = <span class="keyword">new</span> RuntimeException().getStackTrace();</span><br><span class="line">        <span class="keyword">for</span> (StackTraceElement stackTraceElement : stackTrace) &#123;</span><br><span class="line">            <span class="comment">// 找到main方法</span></span><br><span class="line">            <span class="keyword">if</span> (<span class="string">&quot;main&quot;</span>.equals(stackTraceElement.getMethodName())) &#123;</span><br><span class="line">                <span class="comment">// 使用反射获取main方法所在类, 也就是启动类, 返回类对象</span></span><br><span class="line">                <span class="keyword">return</span> Class.forName(stackTraceElement.getClassName());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span> (ClassNotFoundException ex) &#123;</span><br><span class="line">        <span class="comment">// Swallow and continue</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/%E6%BA%90%E7%A0%81/" rel="tag"># 源码</a>
+              <a href="/tags/SpringBoot/" rel="tag"># SpringBoot</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/02/11/Java-CountDownLatch%E7%9A%84%E4%BD%BF%E7%94%A8%E4%B8%8E%E5%8E%9F%E7%90%86/" rel="prev" title="Java-CountDownLatch的使用与原理">
+                  <i class="fa fa-chevron-left"></i> Java-CountDownLatch的使用与原理
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2022/05/31/SpringBoot-%E6%8E%A5%E5%85%A5Jpa%E7%BB%84%E4%BB%B6/" rel="next" title="SpringBoot接入Jpa组件">
+                  SpringBoot接入Jpa组件 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yangs</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+
+</body>
+</html>

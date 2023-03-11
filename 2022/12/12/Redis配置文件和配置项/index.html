@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.7.1","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js"></script>
+<meta name="description" content="简单介绍 当指定配置文件启动Redis服务时, 配置文件必须作为第一个参数, 如下： 1.&#x2F;redis-server &#x2F;path&#x2F;to&#x2F;redis.conf 需要配置内存时, 可以使用带有单位的内存值, 并且单位不区分大小写, 如：1K, 5GB, 4M或者1GB, 1Gb, 1gB都是一样的配置文件中给出了一些单位换算示例：         1k 1000 bytes   1kb 1024 by">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis配置文件和配置项">
+<meta property="og:url" content="http://example.com/2022/12/12/Redis%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%92%8C%E9%85%8D%E7%BD%AE%E9%A1%B9/index.html">
+<meta property="og:site_name" content="小花儿的技术博客">
+<meta property="og:description" content="简单介绍 当指定配置文件启动Redis服务时, 配置文件必须作为第一个参数, 如下： 1.&#x2F;redis-server &#x2F;path&#x2F;to&#x2F;redis.conf 需要配置内存时, 可以使用带有单位的内存值, 并且单位不区分大小写, 如：1K, 5GB, 4M或者1GB, 1Gb, 1gB都是一样的配置文件中给出了一些单位换算示例：         1k 1000 bytes   1kb 1024 by">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-12-12T13:46:11.000Z">
+<meta property="article:modified_time" content="2022-12-27T07:56:56.603Z">
+<meta property="article:author" content="Yangs">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://example.com/2022/12/12/Redis%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%92%8C%E9%85%8D%E7%BD%AE%E9%A1%B9/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://example.com/2022/12/12/Redis%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%92%8C%E9%85%8D%E7%BD%AE%E9%A1%B9/","path":"2022/12/12/Redis配置文件和配置项/","title":"Redis配置文件和配置项"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Redis配置文件和配置项 | 小花儿的技术博客</title>
+  
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">小花儿的技术博客</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li>
+        <li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+        <li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li>
+        <li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">简单介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#INCLUDES-%E5%A4%9A%E9%85%8D%E7%BD%AE%E5%BC%95%E5%85%A5"><span class="nav-number">2.</span> <span class="nav-text">INCLUDES-多配置引入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MODULES-%E6%A8%A1%E5%9D%97%E5%8A%A0%E8%BD%BD"><span class="nav-number">3.</span> <span class="nav-text">MODULES-模块加载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NETWORK-%E7%BD%91%E7%BB%9C%E9%85%8D%E7%BD%AE"><span class="nav-number">4.</span> <span class="nav-text">NETWORK-网络配置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#bind"><span class="nav-number">4.1.</span> <span class="nav-text">bind</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#bind-source-addr"><span class="nav-number">4.2.</span> <span class="nav-text">bind-source-addr</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#protected-mode"><span class="nav-number">4.3.</span> <span class="nav-text">protected-mode</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#enable-protected-configs-enable-debug-command-enable-module-command"><span class="nav-number">4.4.</span> <span class="nav-text">enable-protected-configs, enable-debug-command, enable-module-command</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#port"><span class="nav-number">4.5.</span> <span class="nav-text">port</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#tcp-backlog"><span class="nav-number">4.6.</span> <span class="nav-text">tcp-backlog</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yangs"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yangs</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">24</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/12/12/Redis%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E5%92%8C%E9%85%8D%E7%BD%AE%E9%A1%B9/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yangs">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小花儿的技术博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Redis配置文件和配置项
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2022-12-12 21:46:11" itemprop="dateCreated datePublished" datetime="2022-12-12T21:46:11+08:00">2022-12-12</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">更新于</span>
+        <time title="修改时间：2022-12-27 15:56:56" itemprop="dateModified" datetime="2022-12-27T15:56:56+08:00">2022-12-27</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Redis/" itemprop="url" rel="index"><span itemprop="name">Redis</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <div class="note success"><h3 id="简单介绍"><a href="#简单介绍" class="headerlink" title="简单介绍"></a>简单介绍</h3></div>
+<p>当指定配置文件启动Redis服务时, 配置文件必须作为第一个参数, 如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./redis-server /path/to/redis.conf</span><br></pre></td></tr></table></figure>
+<p>需要配置内存时, 可以使用带有单位的内存值, 并且单位不区分大小写, 如：1K, 5GB, 4M或者1GB, 1Gb, 1gB都是一样的<br>配置文件中给出了一些单位换算示例：</p>
+<table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center"></th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1k</td>
+<td align="center">1000 bytes</td>
+</tr>
+<tr>
+<td align="center">1kb</td>
+<td align="center">1024 bytes</td>
+</tr>
+<tr>
+<td align="center">1m</td>
+<td align="center">1000000 bytes</td>
+</tr>
+<tr>
+<td align="center">1mb</td>
+<td align="center">1024*1024 bytes</td>
+</tr>
+<tr>
+<td align="center">1g</td>
+<td align="center">1000000000 bytes</td>
+</tr>
+<tr>
+<td align="center">1gb</td>
+<td align="center">1024*1024*1024 bytes</td>
+</tr>
+</tbody></table>
+<div class="note success"><h3 id="INCLUDES-多配置引入"><a href="#INCLUDES-多配置引入" class="headerlink" title="INCLUDES-多配置引入"></a>INCLUDES-多配置引入</h3></div>
+<p>使用场景：如果有一个适用于所有Redis服务器的模板配置, 然后需要对每个服务分别设置一些自定义配置时<br>配置位置：include引入的配置不会被来自管理员或Redis Sentinel的”CONFIG REWRITE”命令重写, 所以引入的位置会影响其他配置项</p>
+<ul>
+<li>include放在这个文件的开头, 可以避免在运行时引入的配置覆盖其他配置</li>
+<li>include放在这个文件的最后一行, 则可以使用配置文件覆盖配置选项</li>
+</ul>
+<p>引入格式：路径可以使用通配符, 匹配通配符的所有文件将按字母顺序包含, 如果没有符合的文件, 则会忽略这个引入不会报错</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">include /path/to/local.conf</span><br><span class="line">include /path/to/other.conf</span><br><span class="line">include /path/to/fragments<span class="comment">/*.conf</span></span><br></pre></td></tr></table></figure>
+
+<div class="note success"><h3 id="MODULES-模块加载"><a href="#MODULES-模块加载" class="headerlink" title="MODULES-模块加载"></a>MODULES-模块加载</h3></div>
+<p>在启动时加载指定模块, 支持配置多个模块. 如果服务器不能加载模块, 启动中止</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">loadmodule /path/to/my_module.so</span><br><span class="line">loadmodule /path/to/other_module.so</span><br></pre></td></tr></table></figure>
+<div class="note success"><h3 id="NETWORK-网络配置"><a href="#NETWORK-网络配置" class="headerlink" title="NETWORK-网络配置"></a>NETWORK-网络配置</h3></div>
+<h4 id="bind"><a href="#bind" class="headerlink" title="bind"></a>bind</h4><p>配置功能：未配置bind时, Redis会监听主机上所有可用网络接口的连接, 使用bind配置指令只监听一个或多个选定的接口或一个或多个IP地址, 每个地址都可以加上“-”前缀，表示没有地址时redis不会启动失败<br>默认配置：bind 127.0.0.1 -::1<br>默认原因：运行Redis的计算机直接暴露在互联网上, 绑定到所有接口是危险的, 实例会暴露给互联网上的每个人, 所以默认情况下，我们取消注释以下绑定指令，这将强制Redis仅侦听IPv4和IPv6(如果可用)环回接口地址(这意味着Redis将只能接受来自运行它的同一主机的客户端连接)<br>配置示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// bind 192.168.1.100 10.0.0.1     # 监听两个特定的IPv4地址</span></span><br><span class="line"><span class="comment">// bind 127.0.0.1 ::1              # 监听环回IPv4和IPv6</span></span><br><span class="line"><span class="comment">// bind * -::*                     # 像默认一样, 监听所有可用的接口</span></span><br><span class="line">bind <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span> -::<span class="number">1</span></span><br></pre></td></tr></table></figure>
+<h4 id="bind-source-addr"><a href="#bind-source-addr" class="headerlink" title="bind-source-addr"></a>bind-source-addr</h4><p>默认情况下,传出连接(从副本到主,从Sentinel到实例,集群总线等)没有绑定到特定的本地地址,在大多数情况下，这意味着操作系统将根据路由和连接发出的接口进行处理,使用bind-source-addr可以配置要绑定的特定地址,这也可能影响连接的路由方式</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bind-source-addr <span class="number">10.0</span><span class="number">.0</span><span class="number">.1</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="protected-mode"><a href="#protected-mode" class="headerlink" title="protected-mode"></a>protected-mode</h4><p>保护模式是一层安全保护，以避免在互联网上开放的 Redis 实例被访问和利用<br>当保护模式开启且默认用户没有密码时，服务器仅接受来自 IPv4 地址 (127.0.0.1)、IPv6 地址 (::1) 或 Unix 域套接字的本地连接<br>默认情况下启用保护模式。 只有当您确定希望来自其他主机的客户端连接到 Redis，即使没有配置身份验证，您也应该禁用它。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span>-mode yes</span><br></pre></td></tr></table></figure>
+<h4 id="enable-protected-configs-enable-debug-command-enable-module-command"><a href="#enable-protected-configs-enable-debug-command-enable-module-command" class="headerlink" title="enable-protected-configs, enable-debug-command, enable-module-command"></a>enable-protected-configs, enable-debug-command, enable-module-command</h4><p>Redis 使用默认强化安全配置指令来减少对无辜用户的攻击面. 因此，一些敏感的配置指令是不可变的，一些有潜在危险的命令被阻止<br>控制 Redis 写入的文件（例如“dir”和“dbfilename”）并且在运行时通常不修改的配置指令通过使它们不可变来保护<br>会增加 Redis 攻击面的命令以及用户通常不调用的命令在默认情况下会被阻止.<br>通过将下面列出的每个配置设置为以下任一值，可以将这些连接暴露给所有连接或仅暴露给本地连接：<br>no    - 阻止任何连接（保持不变）<br>yes   - 允许任何连接（无保护）<br>local - 仅允许本地连接. 源自 IPv4 地址 (127.0.0.1)、IPv6 地址 (::1) 或 Unix 域套接字的那些.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">enable-<span class="keyword">protected</span>-configs no</span><br><span class="line">enable-debug-command no</span><br><span class="line">enable-<span class="keyword">module</span>-command no</span><br></pre></td></tr></table></figure>
+<h4 id="port"><a href="#port" class="headerlink" title="port"></a>port</h4><p>接受指定端口上的连接，默认为 6379 (IANA #815344). 如果指定端口 0，Redis 将不会监听 TCP 套接字.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">port <span class="number">6379</span></span><br></pre></td></tr></table></figure>
+<h4 id="tcp-backlog"><a href="#tcp-backlog" class="headerlink" title="tcp-backlog"></a>tcp-backlog</h4><p>TCP listen() 积压<br>在每秒请求数很高的环境中，您需要大量积压以避免客户端连接速度慢的问题<br>请注意，Linux 内核会默默地将其截断为 /proc/sys/net/core/somaxconn 的值，因此请确保同时提高 somaxconn 和 tcp_max_syn_backlog 的值以获得预期的效果.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tcp-backlog <span class="number">511</span></span><br></pre></td></tr></table></figure>
+
+
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Redis/" rel="tag"># Redis</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/12/11/Linux%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85Redis/" rel="prev" title="Linux下编译安装Redis">
+                  <i class="fa fa-chevron-left"></i> Linux下编译安装Redis
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2022/12/17/MapStruct%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/" rel="next" title="MapStruct的基本使用">
+                  MapStruct的基本使用 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Yangs</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/mist/" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">false</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"none","js":{"url":"https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js","integrity":"sha256-r+3itOMtGGjap0x+10hu6jW/gZCzxHsoKrOd7gyRSGY="}}</script>
+<script src="/js/third-party/math/mathjax.js"></script>
+
+
+
+</body>
+</html>
